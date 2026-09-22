@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Post Creator</title>
+<style>
+  :root {
+    --bg: #0f0f12;
+    --panel: #17171c;
+    --panel-2: #1f1f26;
+    --border: #2a2a33;
+    --text: #f2f2f5;
+    --muted: #9797a3;
+    --accent: #7c5cff;
+    --accent-2: #ff5c8a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .app {
+    display: flex;
+    min-height: 100%;
+    flex-wrap: wrap;
+  }
+  .panel {
+    flex: 1 1 380px;
+    padding: 24px;
+    max-width: 460px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .stage {
+    flex: 2 1 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(124,92,255,0.12), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(255,92,138,0.10), transparent 40%),
+      var(--bg);
+  }
+  h1 {
+    font-size: 19px;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 24px;
+  }
+  .field {
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 11px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+  }
+  textarea:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+  textarea { min-height: 90px; }
+  .row {
+    display: flex;
+    gap: 10px;
+  }
+  .row > * { flex: 1; }
+  .seg {
+    display: flex;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .seg button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 8px 6px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .seg button.active {
+    background: var(--accent);
+    color: white;
+  }
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+  }
+  .swatch.active {
+    border-color: white;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .swatch.rainbow {
+    background: conic-gradient(from 0deg, red, yellow, lime, cyan, blue, magenta, red);
+  }
+  input[type="color"] {
+    -webkit-appearance: none;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 50%; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+  .file-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+    width: 100%;
+    justify-content: center;
+  }
+  .file-btn:hover { border-color: var(--accent); }
+  input[type="file"] { display: none; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .switch input { display: none; }
+  .slider-tog {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .slider-tog::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .switch input:checked + .slider-tog {
+    background: var(--accent);
+  }
+  .switch input:checked + .slider-tog::before {
+    transform: translateX(18px);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+  .range-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .profile-block {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border-radius: 6px;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 74vh;
+    height: auto;
+    width: auto;
+  }
+
+  .stage-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    max-width: 100%;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(180deg, rgba(31,31,38,0.95), rgba(23,23,28,0.95));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 6px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    backdrop-filter: blur(6px);
+  }
+  .tool-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+  }
+  .tool-btn:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+  }
+  .tool-btn:active { transform: scale(0.94); }
+  .tool-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+  }
+  .tool-sep {
+    width: 1px;
+    height: 22px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+  .tool-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0a0a0d;
+    color: var(--text);
+    font-size: 11px;
+    padding: 5px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    border: 1px solid var(--border);
+    z-index: 20;
+  }
+  .tool-btn:hover[data-tooltip]::after {
+    opacity: 1;
+  }
+
+  .layers-panel {
+    position: absolute;
+    top: 62px;
+    right: -4px;
+    transform: translateX(calc(100% + 16px));
+    width: 240px;
+    background: linear-gradient(180deg, rgba(31,31,38,0.97), rgba(23,23,28,0.97));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    display: none;
+    z-index: 30;
+  }
+  .layers-panel.open { display: block; }
+  .layers-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .layer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 8px 9px;
+    margin-bottom: 6px;
+  }
+  .layer-row.locked { opacity: 0.55; }
+  .layer-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .layer-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .layer-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .layer-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .layer-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+  }
+  .layer-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+  .layers-hint {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 760px) {
+    .layers-panel {
+      position: fixed;
+      top: auto;
+      bottom: 16px;
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      width: min(92vw, 320px);
+    }
+  }
+
+  .download-bar {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  .btn-primary {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: none;
+    color: white;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  @media (max-width: 760px) {
+    .panel { max-width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+    .app { flex-direction: column; }
+    canvas { max-height: 60vh; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <h1>Crea il tuo post</h1>
+    <p class="subtitle">Testo, sfondo e profilo — pronto per Instagram</p>
+
+    <div class="field">
+      <label>Formato</label>
+      <div class="seg" id="formatSeg">
+        <button data-fmt="square" class="active">Quadrato</button>
+        <button data-fmt="portrait">Verticale 4:5</button>
+        <button data-fmt="story">Storia 9:16</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Testo del post</label>
+      <textarea id="mainText" placeholder="Scrivi qui il testo da mostrare...">La cosa più difficile non è iniziare.
+È continuare quando nessuno guarda.</textarea>
+    </div>
+
+    <div class="field">
+      <label>Allineamento testo</label>
+      <div class="seg" id="alignSeg">
+        <button data-align="left">Sinistra</button>
+        <button data-align="center" class="active">Centro</button>
+        <button data-align="right">Destra</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Sfondo</label>
+      <div class="seg" id="bgModeSeg">
+        <button data-mode="color" class="active">Colore</button>
+        <button data-mode="image">Immagine</button>
+      </div>
+    </div>
+
+    <div class="field" id="bgColorField">
+      <div class="swatches" id="colorSwatches"></div>
+      <input type="color" id="customColor" value="#7c5cff">
+    </div>
+
+    <div class="field" id="bgImageField" style="display:none;">
+      <label class="file-btn" for="bgImageInput">📷 Carica immagine di sfondo</label>
+      <input type="file" id="bgImageInput" accept="image/*">
+      <div class="hint">L'immagine verrà ritagliata per riempire il formato scelto.</div>
+    </div>
+
+    <div class="field">
+      <div class="range-label"><span>Dimensione testo</span><span id="fontSizeVal">54</span></div>
+      <input type="range" id="fontSize" min="24" max="100" value="54">
+    </div>
+
+    <div class="field">
+      <label>Colore testo</label>
+      <div class="swatches" id="textColorSwatches"></div>
+    </div>
+
+    <div class="profile-block">
+      <div class="toggle-row">
+        <label style="margin:0;">Mostra profilo sopra al testo</label>
+        <div class="switch">
+          <input type="checkbox" id="profileToggle" checked>
+          <div class="slider-tog"></div>
+        </div>
+      </div>
+      <div id="profileFields">
+        <div class="field" style="margin-bottom:12px;">
+          <label class="file-btn" for="avatarInput">🙂 Carica foto profilo</label>
+          <input type="file" id="avatarInput" accept="image/*">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Nome / username</label>
+          <input type="text" id="profileName" value="il_tuo_profilo" placeholder="@username">
+        </div>
+      </div>
+    </div>
+
+    <div class="download-bar">
+      <button class="btn-primary" id="downloadBtn">Scarica immagine PNG</button>
+    </div>
+    <div class="hint">Quadrato 1080×1080 · Verticale 1080×1350 · Storia 1080×1920 — tutte le dimensioni consigliate da Instagram.</div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-inner">
+      <div class="toolbar">
+        <button class="tool-btn active" id="toolSelect" data-tooltip="Seleziona / naviga">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 3l14 8-6 1.5L11 19z" fill="currentColor"/></svg>
+        </button>
+        <button class="tool-btn" id="toolMove" data-tooltip="Sposta gli elementi">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2l3 3h-2v5h5V8l3 3-3 3v-2h-5v5h2l-3 3-3-3h2v-5H6v2l-3-3 3-3v2h5V5H9z" fill="currentColor"/></svg>
+        </button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="toolLayers" data-tooltip="Livelli">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2 2 7l10 5 10-5zM2 12l10 5 10-5M2 17l10 5 10-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+        <button class="tool-btn" id="toolReset" data-tooltip="Ripristina posizioni">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 4v6h6M20 20v-6h-6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 15a8 8 0 1 0 2-11.3L4 6M19.5 9a8 8 0 0 1-2 11.3L20 18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="layers-panel" id="layersPanel">
+        <div class="layers-title">Livelli</div>
+        <div id="layersList"></div>
+        <div class="layers-hint">Trascina l'ordine per decidere cosa sta sopra o sotto.</div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1080"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const FORMATS = {
+  square: { w: 1080, h: 1080 },
+  portrait: { w: 1080, h: 1350 },
+  story: { w: 1080, h: 1920 }
+};
+
+const state = {
+  format: 'square',
+  text: document.getElementById('mainText').value,
+  align: 'center',
+  bgMode: 'color',
+  bgColor: '#7c5cff',
+  bgImage: null,
+  fontSize: 54,
+  textColor: '#ffffff',
+  showProfile: true,
+  avatarImage: null,
+  profileName: 'il_tuo_profilo',
+  dragMode: false,
+  textOffset: { x: 0, y: 0 },
+  profileOffset: { x: 0, y: 0 },
+  textVisible: true,
+  layerOrder: ['text', 'profile']
+};
+
+let textBBox = null;
+let profileBBox = null;
+let dragTarget = null;
+let dragStart = null;
+let dragStartOffset = null;
+
+const colorPalette = [
+  '#7c5cff', '#ff5c8a', '#111318', '#ffffff', '#f4a940',
+  '#2fbf71', '#2f7bbf', '#e63946', '#1d1d29'
+];
+const textColorPalette = ['#ffffff', '#111318', '#7c5cff', '#ff5c8a', '#f4a940', '#2fbf71'];
+
+function buildSwatches(container, palette, activeVal, onPick) {
+  container.innerHTML = '';
+  palette.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'swatch' + (c === activeVal ? ' active' : '');
+    el.style.background = c;
+    el.style.border = c === '#ffffff' ? '2px solid #444' : '2px solid transparent';
+    el.addEventListener('click', () => {
+      onPick(c);
+      [...container.children].forEach(ch => ch.classList.remove('active'));
+      el.classList.add('active');
+    });
+    container.appendChild(el);
+  });
+}
+
+buildSwatches(document.getElementById('colorSwatches'), colorPalette, state.bgColor, c => {
+  state.bgColor = c;
+  document.getElementById('customColor').value = c;
+  render();
+});
+buildSwatches(document.getElementById('textColorSwatches'), textColorPalette, state.textColor, c => {
+  state.textColor = c;
+  render();
+});
+
+document.getElementById('customColor').addEventListener('input', e => {
+  state.bgColor = e.target.value;
+  [...document.getElementById('colorSwatches').children].forEach(ch => ch.classList.remove('active'));
+  render();
+});
+
+document.getElementById('formatSeg').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.format = btn.dataset.fmt;
+  render();
+});
+
+document.getElementById('alignSeg').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.align = btn.dataset.align;
+  render();
+});
+
+document.getElementById('bgModeSeg').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.bgMode = btn.dataset.mode;
+  document.getElementById('bgColorField').style.display = state.bgMode === 'color' ? 'block' : 'none';
+  document.getElementById('bgImageField').style.display = state.bgMode === 'image' ? 'block' : 'none';
+  render();
+});
+
+document.getElementById('mainText').addEventListener('input', e => {
+  state.text = e.target.value;
+  render();
+});
+
+document.getElementById('fontSize').addEventListener('input', e => {
+  state.fontSize = parseInt(e.target.value, 10);
+  document.getElementById('fontSizeVal').textContent = state.fontSize;
+  render();
+});
+
+document.getElementById('profileToggle').addEventListener('change', e => {
+  state.showProfile = e.target.checked;
+  document.getElementById('profileFields').style.opacity = state.showProfile ? '1' : '0.4';
+  if (typeof renderLayersList === 'function' && layersPanelIsOpen()) renderLayersList();
+  render();
+});
+
+function layersPanelIsOpen() {
+  const el = document.getElementById('layersPanel');
+  return el && el.classList.contains('open');
+}
+
+document.getElementById('profileName').addEventListener('input', e => {
+  state.profileName = e.target.value;
+  render();
+});
+
+function loadImageFile(input, cb) {
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => { cb(img); render(); };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+loadImageFile(document.getElementById('bgImageInput'), img => { state.bgImage = img; });
+loadImageFile(document.getElementById('avatarInput'), img => { state.avatarImage = img; });
+
+function drawCoverImage(img, x, y, w, h) {
+  const imgRatio = img.width / img.height;
+  const boxRatio = w / h;
+  let sx, sy, sw, sh;
+  if (imgRatio > boxRatio) {
+    sh = img.height;
+    sw = sh * boxRatio;
+    sx = (img.width - sw) / 2;
+    sy = 0;
+  } else {
+    sw = img.width;
+    sh = sw / boxRatio;
+    sx = 0;
+    sy = (img.height - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+function wrapText(text, maxWidth) {
+  const paragraphs = text.split('\n');
+  const lines = [];
+  paragraphs.forEach(p => {
+    if (p.trim() === '') { lines.push(''); return; }
+    const words = p.split(' ');
+    let line = '';
+    words.forEach(word => {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+  });
+  return lines;
+}
+
+function render() {
+  const fmt = FORMATS[state.format];
+  canvas.width = fmt.w;
+  canvas.height = fmt.h;
+  const W = fmt.w, H = fmt.h;
+
+  // background (always at the very bottom)
+  if (state.bgMode === 'image' && state.bgImage) {
+    drawCoverImage(state.bgImage, 0, 0, W, H);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    ctx.fillStyle = state.bgMode === 'color' ? state.bgColor : '#111318';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  const paddingX = W * 0.09;
+  const maxTextWidth = W - paddingX * 2;
+  const scale = W / 1080;
+  const fontSize = state.fontSize * scale;
+  const lineHeight = fontSize * 1.3;
+  const fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+  ctx.font = `600 ${fontSize}px ${fontStack}`;
+  ctx.textBaseline = 'alphabetic';
+
+  const lines = wrapText(state.text, maxTextWidth);
+  const totalTextHeight = lines.length * lineHeight;
+  const maxLineWidth = lines.reduce((m, l) => Math.max(m, ctx.measureText(l).width), 0);
+
+  const avatarSize = 84 * scale;
+  const profileGap = 34 * scale;
+  const profileVisible = state.showProfile;
+  const textVisible = state.textVisible;
+  const profileBlockHeight = profileVisible ? (avatarSize + profileGap) : 0;
+
+  const blockHeight = totalTextHeight + profileBlockHeight;
+  let cursorY = (H - blockHeight) / 2;
+
+  // --- compute profile layout (position only, not drawn yet) ---
+  let profileLayout = null;
+  if (profileVisible) {
+    let profileX;
+    const nameFontSize = 30 * scale;
+    ctx.font = `600 ${nameFontSize}px ${fontStack}`;
+    const nameWidth = ctx.measureText(state.profileName).width;
+    const rowWidth = avatarSize + 18 * scale + nameWidth;
+
+    if (state.align === 'center') profileX = (W - rowWidth) / 2;
+    else if (state.align === 'right') profileX = W - paddingX - rowWidth;
+    else profileX = paddingX;
+
+    profileX += state.profileOffset.x * scale;
+    const avatarY = cursorY + state.profileOffset.y * scale;
+    profileLayout = { profileX, avatarY, rowWidth, nameFontSize, avatarSize };
+    profileBBox = { x: profileX, y: avatarY, w: rowWidth, h: avatarSize };
+  } else {
+    profileBBox = null;
+  }
+  cursorY += profileBlockHeight;
+
+  // --- compute text layout (position only, not drawn yet) ---
+  ctx.font = `600 ${fontSize}px ${fontStack}`;
+  ctx.textAlign = state.align;
+  let textX;
+  if (state.align === 'center') textX = W / 2;
+  else if (state.align === 'right') textX = W - paddingX;
+  else textX = paddingX;
+  textX += state.textOffset.x * scale;
+  // text sits right after the profile block in the centered stack, regardless of draw order
+  const textTopY = (H - blockHeight) / 2 + profileBlockHeight + state.textOffset.y * scale;
+
+  let bboxX;
+  if (state.align === 'center') bboxX = textX - maxLineWidth / 2;
+  else if (state.align === 'right') bboxX = textX - maxLineWidth;
+  else bboxX = textX;
+
+  if (textVisible) {
+    textBBox = { x: bboxX, y: textTopY, w: maxLineWidth, h: totalTextHeight };
+  } else {
+    textBBox = null;
+  }
+
+  function drawProfileLayer() {
+    if (!profileVisible || !profileLayout) return;
+    const { profileX, avatarY, rowWidth, nameFontSize, avatarSize } = profileLayout;
+    const cx = profileX + avatarSize / 2;
+    const cy = avatarY + avatarSize / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, avatarSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    if (state.avatarImage) {
+      drawCoverImage(state.avatarImage, profileX, avatarY, avatarSize, avatarSize);
+    } else {
+      const grad = ctx.createLinearGradient(profileX, avatarY, profileX + avatarSize, avatarY + avatarSize);
+      grad.addColorStop(0, '#7c5cff');
+      grad.addColorStop(1, '#ff5c8a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(profileX, avatarY, avatarSize, avatarSize);
+    }
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, avatarSize / 2, 0, Math.PI * 2);
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.stroke();
+
+    ctx.fillStyle = state.textColor;
+    ctx.font = `600 ${nameFontSize}px ${fontStack}`;
+    ctx.textAlign = 'left';
+    ctx.fillText(state.profileName, profileX + avatarSize + 18 * scale, cy + nameFontSize * 0.36);
+  }
+
+  function drawTextLayer() {
+    if (!textVisible) return;
+    ctx.font = `600 ${fontSize}px ${fontStack}`;
+    ctx.fillStyle = state.textColor;
+    ctx.textAlign = state.align;
+    lines.forEach((line, i) => {
+      ctx.fillText(line, textX, textTopY + lineHeight * (i + 1) - lineHeight * 0.22);
+    });
+  }
+
+  // draw in the order defined by state.layerOrder (first = back, last = front)
+  state.layerOrder.forEach(layer => {
+    if (layer === 'profile') drawProfileLayer();
+    else if (layer === 'text') drawTextLayer();
+  });
+
+  if (state.dragMode) {
+    ctx.save();
+    ctx.setLineDash([10 * scale, 8 * scale]);
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    if (textBBox) {
+      ctx.strokeRect(textBBox.x - 10 * scale, textBBox.y - 10 * scale, textBBox.w + 20 * scale, textBBox.h + 20 * scale);
+    }
+    if (profileBBox) {
+      ctx.strokeRect(profileBBox.x - 10 * scale, profileBBox.y - 10 * scale, profileBBox.w + 20 * scale, profileBBox.h + 20 * scale);
+    }
+    ctx.restore();
+  }
+}
+
+const toolSelect = document.getElementById('toolSelect');
+const toolMove = document.getElementById('toolMove');
+const toolLayers = document.getElementById('toolLayers');
+const toolReset = document.getElementById('toolReset');
+const layersPanel = document.getElementById('layersPanel');
+const layersList = document.getElementById('layersList');
+
+function setDragMode(on) {
+  state.dragMode = on;
+  toolMove.classList.toggle('active', on);
+  toolSelect.classList.toggle('active', !on);
+  canvas.style.cursor = on ? 'grab' : 'default';
+  render();
+}
+
+toolMove.addEventListener('click', () => setDragMode(true));
+toolSelect.addEventListener('click', () => setDragMode(false));
+
+toolLayers.addEventListener('click', () => {
+  layersPanel.classList.toggle('open');
+  toolLayers.classList.toggle('active', layersPanel.classList.contains('open'));
+  if (layersPanel.classList.contains('open')) renderLayersList();
+});
+
+toolReset.addEventListener('click', () => {
+  state.textOffset = { x: 0, y: 0 };
+  state.profileOffset = { x: 0, y: 0 };
+  render();
+});
+
+const LAYER_META = {
+  text: { icon: '🅣', label: 'Testo' },
+  profile: { icon: '🙂', label: 'Profilo' }
+};
+
+function moveLayer(name, dir) {
+  const i = state.layerOrder.indexOf(name);
+  const j = i + dir;
+  if (j < 0 || j >= state.layerOrder.length) return;
+  [state.layerOrder[i], state.layerOrder[j]] = [state.layerOrder[j], state.layerOrder[i]];
+  renderLayersList();
+  render();
+}
+
+function toggleLayerVisibility(name) {
+  if (name === 'text') state.textVisible = !state.textVisible;
+  if (name === 'profile') {
+    state.showProfile = !state.showProfile;
+    document.getElementById('profileToggle').checked = state.showProfile;
+    document.getElementById('profileFields').style.opacity = state.showProfile ? '1' : '0.4';
+  }
+  renderLayersList();
+  render();
+}
+
+function renderLayersList() {
+  layersList.innerHTML = '';
+  // top of list = drawn last = frontmost
+  const displayOrder = [...state.layerOrder].reverse();
+  displayOrder.forEach(name => {
+    const meta = LAYER_META[name];
+    const visible = name === 'text' ? state.textVisible : state.showProfile;
+    const idx = state.layerOrder.indexOf(name);
+    const row = document.createElement('div');
+    row.className = 'layer-row';
+    row.innerHTML = `
+      <button class="layer-btn" data-act="vis" title="Mostra/nascondi">${visible ? '👁' : '🙈'}</button>
+      <span class="layer-icon">${meta.icon}</span>
+      <span class="layer-name">${meta.label}</span>
+      <div class="layer-actions">
+        <button class="layer-btn" data-act="up" title="Porta avanti">▲</button>
+        <button class="layer-btn" data-act="down" title="Porta indietro">▼</button>
+      </div>
+    `;
+    row.querySelector('[data-act="vis"]').addEventListener('click', () => toggleLayerVisibility(name));
+    const upBtn = row.querySelector('[data-act="up"]');
+    const downBtn = row.querySelector('[data-act="down"]');
+    upBtn.disabled = idx === state.layerOrder.length - 1;
+    downBtn.disabled = idx === 0;
+    upBtn.addEventListener('click', () => moveLayer(name, 1));
+    downBtn.addEventListener('click', () => moveLayer(name, -1));
+    layersList.appendChild(row);
+  });
+
+  const bgRow = document.createElement('div');
+  bgRow.className = 'layer-row locked';
+  bgRow.innerHTML = `<span class="layer-icon">🔒</span><span class="layer-name">Sfondo</span>`;
+  layersList.appendChild(bgRow);
+}
+
+function pointFromEvent(e) {
+  const rect = canvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+}
+
+function inBox(pt, box) {
+  return box && pt.x >= box.x && pt.x <= box.x + box.w && pt.y >= box.y && pt.y <= box.y + box.h;
+}
+
+function startDrag(e) {
+  if (!state.dragMode) return;
+  const pt = pointFromEvent(e);
+  // hit-test frontmost layer first, so overlapping elements pick the one on top
+  const frontToBack = [...state.layerOrder].reverse();
+  for (const layer of frontToBack) {
+    if (layer === 'profile' && state.showProfile && inBox(pt, profileBBox)) {
+      dragTarget = 'profile';
+      dragStartOffset = { ...state.profileOffset };
+      break;
+    }
+    if (layer === 'text' && state.textVisible && inBox(pt, textBBox)) {
+      dragTarget = 'text';
+      dragStartOffset = { ...state.textOffset };
+      break;
+    }
+  }
+  if (!dragTarget) return;
+  dragStart = pt;
+  canvas.style.cursor = 'grabbing';
+  e.preventDefault();
+}
+
+function moveDrag(e) {
+  if (!dragTarget) return;
+  const pt = pointFromEvent(e);
+  const scale = canvas.width / 1080;
+  const dx = (pt.x - dragStart.x) / scale;
+  const dy = (pt.y - dragStart.y) / scale;
+  const newOffset = { x: dragStartOffset.x + dx, y: dragStartOffset.y + dy };
+  if (dragTarget === 'profile') state.profileOffset = newOffset;
+  else state.textOffset = newOffset;
+  render();
+  e.preventDefault();
+}
+
+function endDrag() {
+  dragTarget = null;
+  if (state.dragMode) canvas.style.cursor = 'grab';
+}
+
+canvas.addEventListener('mousedown', startDrag);
+window.addEventListener('mousemove', moveDrag);
+window.addEventListener('mouseup', endDrag);
+canvas.addEventListener('touchstart', startDrag, { passive: false });
+window.addEventListener('touchmove', moveDrag, { passive: false });
+window.addEventListener('touchend', endDrag);
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = `post-${state.format}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+renderLayersList();
+render();
+</script>
+</body>
+</html>
