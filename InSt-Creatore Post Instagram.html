@@ -191,7 +191,46 @@
   .layer-btn:disabled { opacity: 0.25; cursor: default; }
   .layers-hint { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
 
+  .struct-row { display: flex; gap: 10px; margin-bottom: 8px; }
+  .struct-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 12px; font-size: 13px; font-weight: 600; color: var(--text);
+    cursor: pointer; font-family: inherit; position: relative; overflow: hidden;
+    transition: border-color 0.18s, transform 0.12s, box-shadow 0.18s;
+  }
+  .struct-btn svg { flex-shrink: 0; position: relative; z-index: 1; transition: transform 0.18s; }
+  .struct-btn span { position: relative; z-index: 1; }
+  .struct-btn::before {
+    content: ""; position: absolute; inset: 0; opacity: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    transition: opacity 0.18s;
+  }
+  .struct-btn:hover { border-color: transparent; box-shadow: 0 8px 20px rgba(124,92,255,0.28); }
+  .struct-btn:hover::before { opacity: 1; }
+  .struct-btn:hover svg { transform: translateY(-1px); }
+  .struct-btn:active { transform: scale(0.97); }
+  .struct-btn.export svg { color: var(--accent-2); }
+  .struct-btn.import svg { color: var(--accent); }
+  .struct-btn:hover svg { color: white; }
+
+  .title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .lang-select {
+    appearance: none; -webkit-appearance: none; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+    font-size: 12px; font-weight: 600; font-family: inherit; padding: 6px 26px 6px 10px;
+    cursor: pointer; flex-shrink: 0; transition: border-color 0.15s;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='11' height='11'><path d='M6 9l6 6 6-6' fill='none' stroke='%239797a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .lang-select:hover, .lang-select:focus { border-color: var(--accent); outline: none; }
+
   .download-bar { margin-top: 22px; display: flex; gap: 10px; }
+  .link-btn {
+    background: none; border: none; color: var(--muted); font-size: 11px;
+    text-decoration: underline; cursor: pointer; padding: 0; margin-top: 8px; font-family: inherit;
+  }
+  .link-btn:hover { color: var(--text); }
   .btn-primary {
     flex: 1; background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: none;
     color: white; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600;
@@ -271,23 +310,34 @@
 <body>
 <div class="app">
   <div class="panel">
-    <h1>Crea il tuo post</h1>
-    <p class="subtitle">Testo, sfondo e profilo — pronto per Instagram</p>
+    <div class="title-row">
+      <div>
+        <h1 data-i18n="title">Crea il tuo post</h1>
+        <p class="subtitle" data-i18n="subtitle">Testo, sfondo e profilo — pronto per Instagram</p>
+      </div>
+      <select class="lang-select" id="langSelect" aria-label="Lingua / Language">
+        <option value="it">🇮🇹 Italiano</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+      </select>
+    </div>
 
     <div class="field">
-      <label>Formato</label>
+      <label data-i18n="label_format">Formato</label>
       <div class="seg" id="formatSeg">
-        <button data-fmt="square" class="active">Quadrato</button>
-        <button data-fmt="portrait">Verticale 4:5</button>
-        <button data-fmt="story">Storia 9:16</button>
+        <button data-fmt="square" class="active" data-i18n="fmt_square">Quadrato</button>
+        <button data-fmt="portrait" data-i18n="fmt_portrait">Verticale 4:5</button>
+        <button data-fmt="story" data-i18n="fmt_story">Storia 9:16</button>
       </div>
     </div>
 
-    <div class="section-title">Sfondo</div>
+    <div class="section-title" data-i18n="section_background">Sfondo</div>
     <div class="field">
       <div class="seg" id="bgModeSeg">
-        <button data-mode="color" class="active">Colore</button>
-        <button data-mode="image">Immagine</button>
+        <button data-mode="color" class="active" data-i18n="bgmode_color">Colore</button>
+        <button data-mode="image" data-i18n="bgmode_image">Immagine</button>
       </div>
     </div>
     <div class="field" id="bgColorField">
@@ -295,44 +345,60 @@
       <input type="color" id="customColor" value="#7c5cff">
     </div>
     <div class="field" id="bgImageField" style="display:none;">
-      <label class="file-btn" for="bgImageInput">📷 Carica immagine di sfondo</label>
+      <label class="file-btn" for="bgImageInput" data-i18n="bgimage_label">📷 Carica immagine di sfondo</label>
       <input type="file" id="bgImageInput" accept="image/*">
     </div>
 
-    <div class="section-title">Elementi</div>
+    <div class="section-title" data-i18n="section_elements">Elementi</div>
     <div class="add-row">
-      <button class="action-btn" id="addTextBtn">➕ Testo</button>
-      <button class="action-btn" id="addProfileBtn">➕ Profilo</button>
+      <button class="action-btn" id="addTextBtn" data-i18n="add_text">➕ Testo</button>
+      <button class="action-btn" id="addProfileBtn" data-i18n="add_profile">➕ Profilo</button>
     </div>
 
-    <div class="section-title">Modifica elemento</div>
+    <div class="section-title" data-i18n="section_edit_element">Modifica elemento</div>
     <div id="elementEditor"></div>
 
-    <div class="download-bar">
-      <button class="btn-primary" id="downloadBtn">Scarica immagine PNG</button>
+    <div class="section-title" data-i18n="section_structure">Struttura layout</div>
+    <div class="struct-row">
+      <button class="struct-btn export" id="exportStructBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="export_struct">Esporta struttura</span>
+      </button>
+      <label class="struct-btn import" for="importStructInput">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 15V3m0 0-4 4m4-4 4 4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="import_struct">Importa struttura</span>
+      </label>
+      <input type="file" id="importStructInput" accept="application/json,.json">
     </div>
-    <div class="hint">Quadrato 1080×1080 · Verticale 1080×1350 · Storia 1080×1920 — tutte le dimensioni consigliate da Instagram.</div>
+    <div class="hint" data-i18n="hint_struct">Esporta solo il layout — testi, posizioni, colori, formato — in un piccolo file .json, senza le immagini caricate, per riusare velocemente la stessa impostazione su un nuovo post.</div>
+
+    <div class="download-bar">
+      <button class="btn-primary" id="downloadBtn" data-i18n="download_btn">Scarica immagine PNG</button>
+    </div>
+    <div class="hint" data-i18n="hint_sizes">Quadrato 1080×1080 · Verticale 1080×1350 · Storia 1080×1920 — tutte le dimensioni consigliate da Instagram.</div>
+    <div class="hint" data-i18n="hint_autosave">💾 Il progetto viene salvato automaticamente in questo browser: se chiudi o ricarichi la pagina, lo ritrovi com'era.</div>
+    <button type="button" class="link-btn" id="clearAutosaveBtn" data-i18n="clear_autosave">Cancella dati salvati e ricomincia</button>
   </div>
 
   <div class="stage">
     <div class="stage-inner">
       <div class="toolbar">
-        <button class="tool-btn active" id="toolSelect" data-tooltip="Seleziona / naviga">
+        <button class="tool-btn active" id="toolSelect" data-tooltip="Seleziona / naviga" data-i18n-tooltip="tooltip_select">
           <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 3l14 8-6 1.5L11 19z" fill="currentColor"/></svg>
         </button>
-        <button class="tool-btn" id="toolMove" data-tooltip="Sposta gli elementi">
+        <button class="tool-btn" id="toolMove" data-tooltip="Sposta gli elementi" data-i18n-tooltip="tooltip_move">
           <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2l3 3h-2v5h5V8l3 3-3 3v-2h-5v5h2l-3 3-3-3h2v-5H6v2l-3-3 3-3v2h5V5H9z" fill="currentColor"/></svg>
         </button>
         <div class="tool-sep"></div>
-        <button class="tool-btn" id="toolLayers" data-tooltip="Livelli">
+        <button class="tool-btn" id="toolLayers" data-tooltip="Livelli" data-i18n-tooltip="tooltip_layers">
           <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2 2 7l10 5 10-5zM2 12l10 5 10-5M2 17l10 5 10-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
         </button>
         <div class="tool-sep"></div>
-        <button class="tool-btn" id="toolUndo" data-tooltip="Annulla ultima modifica" disabled>
+        <button class="tool-btn" id="toolUndo" data-tooltip="Annulla ultima modifica" data-i18n-tooltip="tooltip_undo" disabled>
           <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="tool-sep"></div>
-        <button class="tool-btn" id="toolSkeleton" data-tooltip="Vista scheletro: mostra tutti i quadranti">
+        <button class="tool-btn" id="toolSkeleton" data-tooltip="Vista scheletro: mostra tutti i quadranti" data-i18n-tooltip="tooltip_skeleton">
           <svg viewBox="0 0 24 24" width="18" height="18">
             <g transform="rotate(45 12 12)">
               <rect x="9" y="5" width="6" height="14" rx="3" fill="currentColor"/>
@@ -343,7 +409,7 @@
             </g>
           </svg>
         </button>
-        <button class="tool-btn" id="toolEditAll" data-tooltip="Modifica tutti gli elementi insieme">
+        <button class="tool-btn" id="toolEditAll" data-tooltip="Modifica tutti gli elementi insieme" data-i18n-tooltip="tooltip_editall">
           <svg viewBox="0 0 24 24" width="18" height="18">
             <rect x="3" y="4" width="5" height="16" rx="1.5" fill="currentColor"/>
             <rect x="9.5" y="4" width="5" height="16" rx="1.5" fill="currentColor" opacity="0.55"/>
@@ -357,9 +423,9 @@
       </div>
 
       <div class="layers-panel" id="layersPanel">
-        <div class="layers-title">Livelli</div>
+        <div class="layers-title" data-i18n="layers_title">Livelli</div>
         <div id="layersList"></div>
-        <div class="layers-hint">Trascina l'ordine per decidere cosa sta sopra o sotto. Clicca un livello per modificarlo. Con lo strumento Sposta, trascina il cerchietto sull'angolo di un elemento selezionato per ridimensionarlo.</div>
+        <div class="layers-hint" data-i18n="layers_hint">Trascina l'ordine per decidere cosa sta sopra o sotto. Clicca un livello per modificarlo. Con lo strumento Sposta, trascina il cerchietto sull'angolo di un elemento selezionato per ridimensionarlo.</div>
       </div>
 
       <div class="canvas-wrap">
@@ -371,6 +437,216 @@
 </div>
 
 <script>
+// ---------- i18n ----------
+const T = {
+  it: {
+    title: 'Crea il tuo post', subtitle: 'Testo, sfondo e profilo — pronto per Instagram',
+    label_format: 'Formato', fmt_square: 'Quadrato', fmt_portrait: 'Verticale 4:5', fmt_story: 'Storia 9:16',
+    section_background: 'Sfondo', bgmode_color: 'Colore', bgmode_image: 'Immagine',
+    bgimage_label: '📷 Carica immagine di sfondo',
+    section_elements: 'Elementi', add_text: '➕ Testo', add_profile: '➕ Profilo',
+    section_edit_element: 'Modifica elemento', section_structure: 'Struttura layout',
+    export_struct: 'Esporta struttura', import_struct: 'Importa struttura',
+    hint_struct: 'Esporta solo il layout — testi, posizioni, colori, formato — in un piccolo file .json, senza le immagini caricate, per riusare velocemente la stessa impostazione su un nuovo post.',
+    download_btn: 'Scarica immagine PNG',
+    hint_sizes: 'Quadrato 1080×1080 · Verticale 1080×1350 · Storia 1080×1920 — tutte le dimensioni consigliate da Instagram.',
+    hint_autosave: '💾 Il progetto viene salvato automaticamente in questo browser: se chiudi o ricarichi la pagina, lo ritrovi com\'era.',
+    clear_autosave: 'Cancella dati salvati e ricomincia',
+    tooltip_select: 'Seleziona / naviga', tooltip_move: 'Sposta gli elementi', tooltip_layers: 'Livelli',
+    tooltip_undo: 'Annulla ultima modifica', tooltip_skeleton: 'Vista scheletro: mostra tutti i quadranti',
+    tooltip_editall: 'Modifica tutti gli elementi insieme',
+    layers_title: 'Livelli',
+    layers_hint: 'Trascina l\'ordine per decidere cosa sta sopra o sotto. Clicca un livello per modificarlo. Con lo strumento Sposta, trascina il cerchietto sull\'angolo di un elemento selezionato per ridimensionarlo.',
+    editor_empty: 'Nessun elemento selezionato.<br>Aggiungine uno qui sopra.',
+    kind_text: '🅣 Elemento di testo', label_content: 'Contenuto', label_align: 'Allineamento',
+    align_left: 'Sinistra', align_center: 'Centro', align_right: 'Destra',
+    align_left_short: 'Sx', align_center_short: 'Cn', align_right_short: 'Dx',
+    label_fontsize: 'Dimensione testo', label_textcolor: 'Colore testo',
+    delete_text_btn: '🗑 Elimina questo testo',
+    kind_profile: '🙂 Elemento profilo', upload_avatar: '📷 Carica foto profilo', upload_avatar_short: '📷 Foto profilo',
+    label_name: 'Nome / username', placeholder_username: '@username', label_size: 'Dimensione',
+    delete_profile_btn: '🗑 Elimina questo profilo',
+    new_text_default: 'Nuovo testo', new_profile_default: 'nuovo_profilo',
+    empty_text_label: 'Testo vuoto', default_profile_label: 'Profilo', bg_layer_label: 'Sfondo',
+    alert_invalid_json: 'Il file selezionato non è una struttura valida (JSON non leggibile).',
+    alert_read_error: 'Impossibile leggere il file selezionato.',
+    confirm_clear: 'Cancellare il progetto salvato in questo browser? La pagina tornerà al post di esempio iniziale.',
+    title_vis: 'Mostra/nascondi', title_up: 'Porta avanti', title_down: 'Porta indietro', title_del: 'Elimina',
+    all_elements_empty: 'Nessun elemento. Aggiungine uno dal pannello a sinistra.'
+  },
+  en: {
+    title: 'Create your post', subtitle: 'Text, background and profile — ready for Instagram',
+    label_format: 'Format', fmt_square: 'Square', fmt_portrait: 'Portrait 4:5', fmt_story: 'Story 9:16',
+    section_background: 'Background', bgmode_color: 'Color', bgmode_image: 'Image',
+    bgimage_label: '📷 Upload background image',
+    section_elements: 'Elements', add_text: '➕ Text', add_profile: '➕ Profile',
+    section_edit_element: 'Edit element', section_structure: 'Layout structure',
+    export_struct: 'Export structure', import_struct: 'Import structure',
+    hint_struct: 'Exports only the layout — text, positions, colors, format — as a small .json file, without uploaded images, to quickly reuse the same setup on a new post.',
+    download_btn: 'Download PNG image',
+    hint_sizes: 'Square 1080×1080 · Portrait 1080×1350 · Story 1080×1920 — all sizes recommended by Instagram.',
+    hint_autosave: '💾 The project is saved automatically in this browser: if you close or reload the page, you\'ll find it as it was.',
+    clear_autosave: 'Clear saved data and start over',
+    tooltip_select: 'Select / navigate', tooltip_move: 'Move elements', tooltip_layers: 'Layers',
+    tooltip_undo: 'Undo last change', tooltip_skeleton: 'Skeleton view: show all areas',
+    tooltip_editall: 'Edit all elements together',
+    layers_title: 'Layers',
+    layers_hint: 'Drag the order to decide what\'s on top or below. Click a layer to edit it. With the Move tool, drag the handle on a selected element\'s corner to resize it.',
+    editor_empty: 'No element selected.<br>Add one above.',
+    kind_text: '🅣 Text element', label_content: 'Content', label_align: 'Alignment',
+    align_left: 'Left', align_center: 'Center', align_right: 'Right',
+    align_left_short: 'L', align_center_short: 'C', align_right_short: 'R',
+    label_fontsize: 'Text size', label_textcolor: 'Text color',
+    delete_text_btn: '🗑 Delete this text',
+    kind_profile: '🙂 Profile element', upload_avatar: '📷 Upload profile photo', upload_avatar_short: '📷 Profile photo',
+    label_name: 'Name / username', placeholder_username: '@username', label_size: 'Size',
+    delete_profile_btn: '🗑 Delete this profile',
+    new_text_default: 'New text', new_profile_default: 'new_profile',
+    empty_text_label: 'Empty text', default_profile_label: 'Profile', bg_layer_label: 'Background',
+    alert_invalid_json: 'The selected file is not a valid structure (unreadable JSON).',
+    alert_read_error: 'Unable to read the selected file.',
+    confirm_clear: 'Clear the project saved in this browser? The page will return to the initial sample post.',
+    title_vis: 'Show/hide', title_up: 'Bring forward', title_down: 'Send backward', title_del: 'Delete',
+    all_elements_empty: 'No elements. Add one from the panel on the left.'
+  },
+  es: {
+    title: 'Crea tu publicación', subtitle: 'Texto, fondo y perfil — listo para Instagram',
+    label_format: 'Formato', fmt_square: 'Cuadrado', fmt_portrait: 'Vertical 4:5', fmt_story: 'Historia 9:16',
+    section_background: 'Fondo', bgmode_color: 'Color', bgmode_image: 'Imagen',
+    bgimage_label: '📷 Subir imagen de fondo',
+    section_elements: 'Elementos', add_text: '➕ Texto', add_profile: '➕ Perfil',
+    section_edit_element: 'Editar elemento', section_structure: 'Estructura del diseño',
+    export_struct: 'Exportar estructura', import_struct: 'Importar estructura',
+    hint_struct: 'Exporta solo el diseño — textos, posiciones, colores, formato — en un pequeño archivo .json, sin las imágenes cargadas, para reutilizar rápidamente la misma configuración en una nueva publicación.',
+    download_btn: 'Descargar imagen PNG',
+    hint_sizes: 'Cuadrado 1080×1080 · Vertical 1080×1350 · Historia 1080×1920 — todos los tamaños recomendados por Instagram.',
+    hint_autosave: '💾 El proyecto se guarda automáticamente en este navegador: si cierras o recargas la página, lo encontrarás como estaba.',
+    clear_autosave: 'Borrar datos guardados y empezar de nuevo',
+    tooltip_select: 'Seleccionar / navegar', tooltip_move: 'Mover elementos', tooltip_layers: 'Capas',
+    tooltip_undo: 'Deshacer último cambio', tooltip_skeleton: 'Vista esqueleto: mostrar todas las áreas',
+    tooltip_editall: 'Editar todos los elementos juntos',
+    layers_title: 'Capas',
+    layers_hint: 'Arrastra el orden para decidir qué queda arriba o abajo. Haz clic en una capa para editarla. Con la herramienta Mover, arrastra el círculo en la esquina de un elemento seleccionado para redimensionarlo.',
+    editor_empty: 'Ningún elemento seleccionado.<br>Añade uno arriba.',
+    kind_text: '🅣 Elemento de texto', label_content: 'Contenido', label_align: 'Alineación',
+    align_left: 'Izquierda', align_center: 'Centro', align_right: 'Derecha',
+    align_left_short: 'Iz', align_center_short: 'Ce', align_right_short: 'De',
+    label_fontsize: 'Tamaño del texto', label_textcolor: 'Color del texto',
+    delete_text_btn: '🗑 Eliminar este texto',
+    kind_profile: '🙂 Elemento de perfil', upload_avatar: '📷 Subir foto de perfil', upload_avatar_short: '📷 Foto de perfil',
+    label_name: 'Nombre / usuario', placeholder_username: '@usuario', label_size: 'Tamaño',
+    delete_profile_btn: '🗑 Eliminar este perfil',
+    new_text_default: 'Nuevo texto', new_profile_default: 'nuevo_perfil',
+    empty_text_label: 'Texto vacío', default_profile_label: 'Perfil', bg_layer_label: 'Fondo',
+    alert_invalid_json: 'El archivo seleccionado no es una estructura válida (JSON ilegible).',
+    alert_read_error: 'No se pudo leer el archivo seleccionado.',
+    confirm_clear: '¿Borrar el proyecto guardado en este navegador? La página volverá a la publicación de ejemplo inicial.',
+    title_vis: 'Mostrar/ocultar', title_up: 'Traer adelante', title_down: 'Enviar atrás', title_del: 'Eliminar',
+    all_elements_empty: 'Sin elementos. Añade uno desde el panel de la izquierda.'
+  },
+  fr: {
+    title: 'Créez votre post', subtitle: 'Texte, fond et profil — prêt pour Instagram',
+    label_format: 'Format', fmt_square: 'Carré', fmt_portrait: 'Portrait 4:5', fmt_story: 'Story 9:16',
+    section_background: 'Fond', bgmode_color: 'Couleur', bgmode_image: 'Image',
+    bgimage_label: '📷 Importer une image de fond',
+    section_elements: 'Éléments', add_text: '➕ Texte', add_profile: '➕ Profil',
+    section_edit_element: 'Modifier l\'élément', section_structure: 'Structure de mise en page',
+    export_struct: 'Exporter la structure', import_struct: 'Importer la structure',
+    hint_struct: 'Exporte uniquement la mise en page — textes, positions, couleurs, format — dans un petit fichier .json, sans les images importées, pour réutiliser rapidement la même configuration sur un nouveau post.',
+    download_btn: 'Télécharger l\'image PNG',
+    hint_sizes: 'Carré 1080×1080 · Portrait 1080×1350 · Story 1080×1920 — toutes les tailles recommandées par Instagram.',
+    hint_autosave: '💾 Le projet est enregistré automatiquement dans ce navigateur : si vous fermez ou rechargez la page, vous le retrouverez tel quel.',
+    clear_autosave: 'Effacer les données enregistrées et recommencer',
+    tooltip_select: 'Sélectionner / naviguer', tooltip_move: 'Déplacer les éléments', tooltip_layers: 'Calques',
+    tooltip_undo: 'Annuler la dernière modification', tooltip_skeleton: 'Vue squelette : afficher toutes les zones',
+    tooltip_editall: 'Modifier tous les éléments ensemble',
+    layers_title: 'Calques',
+    layers_hint: 'Faites glisser l\'ordre pour décider ce qui est au-dessus ou en dessous. Cliquez sur un calque pour le modifier. Avec l\'outil Déplacer, faites glisser le cercle sur le coin d\'un élément sélectionné pour le redimensionner.',
+    editor_empty: 'Aucun élément sélectionné.<br>Ajoutez-en un ci-dessus.',
+    kind_text: '🅣 Élément de texte', label_content: 'Contenu', label_align: 'Alignement',
+    align_left: 'Gauche', align_center: 'Centre', align_right: 'Droite',
+    align_left_short: 'Ga', align_center_short: 'Ce', align_right_short: 'Dr',
+    label_fontsize: 'Taille du texte', label_textcolor: 'Couleur du texte',
+    delete_text_btn: '🗑 Supprimer ce texte',
+    kind_profile: '🙂 Élément profil', upload_avatar: '📷 Importer une photo de profil', upload_avatar_short: '📷 Photo de profil',
+    label_name: 'Nom / identifiant', placeholder_username: '@identifiant', label_size: 'Taille',
+    delete_profile_btn: '🗑 Supprimer ce profil',
+    new_text_default: 'Nouveau texte', new_profile_default: 'nouveau_profil',
+    empty_text_label: 'Texte vide', default_profile_label: 'Profil', bg_layer_label: 'Fond',
+    alert_invalid_json: 'Le fichier sélectionné n\'est pas une structure valide (JSON illisible).',
+    alert_read_error: 'Impossible de lire le fichier sélectionné.',
+    confirm_clear: 'Effacer le projet enregistré dans ce navigateur ? La page reviendra au post d\'exemple initial.',
+    title_vis: 'Afficher/masquer', title_up: 'Avancer', title_down: 'Reculer', title_del: 'Supprimer',
+    all_elements_empty: 'Aucun élément. Ajoutez-en un depuis le panneau de gauche.'
+  },
+  de: {
+    title: 'Erstelle deinen Post', subtitle: 'Text, Hintergrund und Profil — bereit für Instagram',
+    label_format: 'Format', fmt_square: 'Quadratisch', fmt_portrait: 'Hochformat 4:5', fmt_story: 'Story 9:16',
+    section_background: 'Hintergrund', bgmode_color: 'Farbe', bgmode_image: 'Bild',
+    bgimage_label: '📷 Hintergrundbild hochladen',
+    section_elements: 'Elemente', add_text: '➕ Text', add_profile: '➕ Profil',
+    section_edit_element: 'Element bearbeiten', section_structure: 'Layout-Struktur',
+    export_struct: 'Struktur exportieren', import_struct: 'Struktur importieren',
+    hint_struct: 'Exportiert nur das Layout — Texte, Positionen, Farben, Format — als kleine .json-Datei, ohne hochgeladene Bilder, um dieselbe Einstellung schnell für einen neuen Post wiederzuverwenden.',
+    download_btn: 'PNG-Bild herunterladen',
+    hint_sizes: 'Quadratisch 1080×1080 · Hochformat 1080×1350 · Story 1080×1920 — alle von Instagram empfohlenen Größen.',
+    hint_autosave: '💾 Das Projekt wird automatisch in diesem Browser gespeichert: Wenn du die Seite schließt oder neu lädst, findest du es unverändert wieder.',
+    clear_autosave: 'Gespeicherte Daten löschen und neu beginnen',
+    tooltip_select: 'Auswählen / navigieren', tooltip_move: 'Elemente verschieben', tooltip_layers: 'Ebenen',
+    tooltip_undo: 'Letzte Änderung rückgängig machen', tooltip_skeleton: 'Skelettansicht: alle Bereiche anzeigen',
+    tooltip_editall: 'Alle Elemente gemeinsam bearbeiten',
+    layers_title: 'Ebenen',
+    layers_hint: 'Ziehe die Reihenfolge, um zu bestimmen, was oben oder unten liegt. Klicke auf eine Ebene, um sie zu bearbeiten. Ziehe mit dem Verschieben-Werkzeug den Kreis an der Ecke eines ausgewählten Elements, um es zu skalieren.',
+    editor_empty: 'Kein Element ausgewählt.<br>Füge oben eines hinzu.',
+    kind_text: '🅣 Textelement', label_content: 'Inhalt', label_align: 'Ausrichtung',
+    align_left: 'Links', align_center: 'Mitte', align_right: 'Rechts',
+    align_left_short: 'Li', align_center_short: 'Mi', align_right_short: 'Re',
+    label_fontsize: 'Textgröße', label_textcolor: 'Textfarbe',
+    delete_text_btn: '🗑 Diesen Text löschen',
+    kind_profile: '🙂 Profilelement', upload_avatar: '📷 Profilfoto hochladen', upload_avatar_short: '📷 Profilfoto',
+    label_name: 'Name / Benutzername', placeholder_username: '@benutzername', label_size: 'Größe',
+    delete_profile_btn: '🗑 Dieses Profil löschen',
+    new_text_default: 'Neuer Text', new_profile_default: 'neues_profil',
+    empty_text_label: 'Leerer Text', default_profile_label: 'Profil', bg_layer_label: 'Hintergrund',
+    alert_invalid_json: 'Die ausgewählte Datei ist keine gültige Struktur (JSON nicht lesbar).',
+    alert_read_error: 'Die ausgewählte Datei konnte nicht gelesen werden.',
+    confirm_clear: 'Das in diesem Browser gespeicherte Projekt löschen? Die Seite kehrt zum anfänglichen Beispielpost zurück.',
+    title_vis: 'Ein-/ausblenden', title_up: 'Nach vorne', title_down: 'Nach hinten', title_del: 'Löschen',
+    all_elements_empty: 'Keine Elemente. Füge eines über das linke Panel hinzu.'
+  }
+};
+const LANG_KEY = 'ig-post-creator-lang';
+const SUPPORTED_LANGS = Object.keys(T);
+let currentLang = 'it';
+function t(key) { return (T[currentLang] && T[currentLang][key]) || T.it[key] || key; }
+function detectLang() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+  } catch (err) { /* localStorage non disponibile */ }
+  const nav = (navigator.language || navigator.userLanguage || 'it').slice(0, 2).toLowerCase();
+  return SUPPORTED_LANGS.includes(nav) ? nav : 'en';
+}
+function applyLanguage(lang) {
+  currentLang = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
+  document.documentElement.lang = currentLang;
+  try { localStorage.setItem(LANG_KEY, currentLang); } catch (err) { /* storage non disponibile */ }
+  document.querySelectorAll('[data-i18n]').forEach(elm => {
+    const key = elm.getAttribute('data-i18n');
+    if (T[currentLang][key] != null) elm.innerHTML = T[currentLang][key];
+  });
+  document.querySelectorAll('[data-i18n-tooltip]').forEach(elm => {
+    const key = elm.getAttribute('data-i18n-tooltip');
+    if (T[currentLang][key] != null) elm.setAttribute('data-tooltip', T[currentLang][key]);
+  });
+  const sel = document.getElementById('langSelect');
+  if (sel) sel.value = currentLang;
+  if (typeof renderElementEditor === 'function') renderElementEditor();
+  if (typeof renderLayersList === 'function') renderLayersList();
+  if (typeof state !== 'undefined' && state.allEditMode && typeof renderAllElementsBar === 'function') renderAllElementsBar();
+}
+document.getElementById('langSelect').addEventListener('change', e => applyLanguage(e.target.value));
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const FONT_STACK = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -382,6 +658,48 @@ const FORMATS = {
 };
 
 function uid(prefix) { return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+// ---------- Helper di validazione (usati per import e ripristino dati) ----------
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+function clampFrac(v) { const n = Number(v); return Number.isFinite(n) ? clamp(n, -0.2, 1.2) : 0.5; }
+
+// Ricostruisce un elemento "pulito" e valido a partire da dati grezzi (localStorage o file importato).
+// Non gestisce le immagini: quelle vengono ricaricate a parte in modo asincrono, quando previsto.
+function elementFromPlainData(raw, { preserveId = false } = {}) {
+  const type = raw && raw.type === 'profile' ? 'profile' : 'text';
+  const base = {
+    id: preserveId && typeof raw.id === 'string' ? raw.id : uid(type),
+    type,
+    xFrac: clampFrac(raw && raw.xFrac),
+    yFrac: clampFrac(raw && raw.yFrac),
+    visible: !(raw && raw.visible === false)
+  };
+  if (type === 'text') {
+    return {
+      ...base,
+      text: (raw && typeof raw.text === 'string' && raw.text) || 'Nuovo testo',
+      align: ['left', 'center', 'right'].includes(raw && raw.align) ? raw.align : 'center',
+      fontSize: clamp(Number(raw && raw.fontSize) || 48, 24, 100),
+      color: (raw && typeof raw.color === 'string' && raw.color) || '#ffffff'
+    };
+  }
+  return {
+    ...base,
+    name: (raw && typeof raw.name === 'string' && raw.name) || 'nuovo_profilo',
+    avatarSize: clamp(Number(raw && raw.avatarSize) || 84, 40, 220),
+    avatarImage: null
+  };
+}
+
+function imageFromSrc(src) {
+  return new Promise(resolve => {
+    if (!src || typeof src !== 'string') { resolve(null); return; }
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
 
 const state = {
   format: 'square',
@@ -398,6 +716,82 @@ const state = {
   selectedId: null
 };
 state.selectedId = state.elements[0].id;
+
+// ---------- Salvataggio automatico (localStorage) ----------
+const AUTOSAVE_KEY = 'ig-post-creator-autosave-v1';
+let autosaveTimer = null;
+
+function serializeElementForStorage(el) {
+  const { _bbox, _handle, ...rest } = el;
+  if (rest.type === 'profile') rest.avatarImage = el.avatarImage ? el.avatarImage.src : null;
+  return rest;
+}
+
+function buildAutosavePayload() {
+  return {
+    version: 1,
+    format: state.format,
+    bgMode: state.bgMode,
+    bgColor: state.bgColor,
+    bgImage: state.bgImage ? state.bgImage.src : null,
+    elements: state.elements.map(serializeElementForStorage),
+    selectedId: state.selectedId
+  };
+}
+
+function saveAutosave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(buildAutosavePayload()));
+  } catch (err) {
+    // Probabile quota di storage superata (es. immagini molto pesanti): riprova senza immagini
+    // così almeno testo, posizioni e colori restano salvati.
+    try {
+      const payload = buildAutosavePayload();
+      payload.bgImage = null;
+      payload.elements = payload.elements.map(el => ({ ...el, avatarImage: null }));
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+    } catch (err2) {
+      console.warn('Salvataggio automatico non riuscito:', err2);
+    }
+  }
+}
+
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(saveAutosave, 500);
+}
+
+async function applyAutosavePayload(data) {
+  state.format = FORMATS[data.format] ? data.format : state.format;
+  state.bgMode = data.bgMode === 'image' ? 'image' : 'color';
+  state.bgColor = typeof data.bgColor === 'string' ? data.bgColor : state.bgColor;
+  state.bgImage = await imageFromSrc(data.bgImage);
+
+  const rawElements = Array.isArray(data.elements) ? data.elements : [];
+  const restored = [];
+  for (const raw of rawElements) {
+    const el = elementFromPlainData(raw, { preserveId: true });
+    if (el.type === 'profile') el.avatarImage = await imageFromSrc(raw && raw.avatarImage);
+    restored.push(el);
+  }
+  if (restored.length) state.elements = restored;
+  state.selectedId = (data.selectedId && state.elements.some(e => e.id === data.selectedId))
+    ? data.selectedId
+    : (state.elements[0] ? state.elements[0].id : null);
+}
+
+async function loadAutosaveIfPresent() {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    await applyAutosavePayload(data);
+    return true;
+  } catch (err) {
+    console.warn('Impossibile ripristinare il salvataggio automatico:', err);
+    return false;
+  }
+}
 
 let history = [];
 const MAX_HISTORY = 40;
@@ -538,33 +932,33 @@ function wrapText(text, maxWidth) {
 function renderElementEditor() {
   const container = document.getElementById('elementEditor');
   const el = getSelected();
-  if (!el) { container.innerHTML = '<div class="editor-empty">Nessun elemento selezionato.<br>Aggiungine uno qui sopra.</div>'; return; }
+  if (!el) { container.innerHTML = `<div class="editor-empty">${t('editor_empty')}</div>`; return; }
 
   if (el.type === 'text') {
     container.innerHTML = `
       <div class="editor-block">
-        <div class="editor-kind">🅣 Elemento di testo</div>
+        <div class="editor-kind">${t('kind_text')}</div>
         <div class="field">
-          <label>Contenuto</label>
+          <label>${t('label_content')}</label>
           <textarea id="edText">${el.text.replace(/</g, '&lt;')}</textarea>
         </div>
         <div class="field">
-          <label>Allineamento</label>
+          <label>${t('label_align')}</label>
           <div class="seg" id="edAlign">
-            <button data-align="left" class="${el.align === 'left' ? 'active' : ''}">Sinistra</button>
-            <button data-align="center" class="${el.align === 'center' ? 'active' : ''}">Centro</button>
-            <button data-align="right" class="${el.align === 'right' ? 'active' : ''}">Destra</button>
+            <button data-align="left" class="${el.align === 'left' ? 'active' : ''}">${t('align_left')}</button>
+            <button data-align="center" class="${el.align === 'center' ? 'active' : ''}">${t('align_center')}</button>
+            <button data-align="right" class="${el.align === 'right' ? 'active' : ''}">${t('align_right')}</button>
           </div>
         </div>
         <div class="field">
-          <div class="range-label"><span>Dimensione testo</span><span id="edFontVal">${el.fontSize}</span></div>
+          <div class="range-label"><span>${t('label_fontsize')}</span><span id="edFontVal">${el.fontSize}</span></div>
           <input type="range" id="edFont" min="24" max="100" value="${el.fontSize}">
         </div>
         <div class="field" style="margin-bottom:6px;">
-          <label>Colore testo</label>
+          <label>${t('label_textcolor')}</label>
           <div class="swatches" id="edColor"></div>
         </div>
-        <button class="delete-btn" id="edDelete">🗑 Elimina questo testo</button>
+        <button class="delete-btn" id="edDelete">${t('delete_text_btn')}</button>
       </div>
     `;
     const textarea = document.getElementById('edText');
@@ -595,20 +989,20 @@ function renderElementEditor() {
   } else {
     container.innerHTML = `
       <div class="editor-block">
-        <div class="editor-kind">🙂 Elemento profilo</div>
+        <div class="editor-kind">${t('kind_profile')}</div>
         <div class="field" style="margin-bottom:12px;">
-          <label class="file-btn" for="edAvatar">📷 Carica foto profilo</label>
+          <label class="file-btn" for="edAvatar">${t('upload_avatar')}</label>
           <input type="file" id="edAvatar" accept="image/*">
         </div>
         <div class="field" style="margin-bottom:14px;">
-          <label>Nome / username</label>
-          <input type="text" id="edName" value="${el.name.replace(/"/g, '&quot;')}" placeholder="@username">
+          <label>${t('label_name')}</label>
+          <input type="text" id="edName" value="${el.name.replace(/"/g, '&quot;')}" placeholder="${t('placeholder_username')}">
         </div>
         <div class="field" style="margin-bottom:6px;">
-          <div class="range-label"><span>Dimensione</span><span id="edSizeVal">${el.avatarSize}</span></div>
+          <div class="range-label"><span>${t('label_size')}</span><span id="edSizeVal">${el.avatarSize}</span></div>
           <input type="range" id="edSize" min="40" max="220" value="${el.avatarSize}">
         </div>
-        <button class="delete-btn" id="edDelete">🗑 Elimina questo profilo</button>
+        <button class="delete-btn" id="edDelete">${t('delete_profile_btn')}</button>
       </div>
     `;
     loadImageFile(document.getElementById('edAvatar'), img => { el.avatarImage = img; });
@@ -654,7 +1048,7 @@ function deleteElement(id) {
 document.getElementById('addTextBtn').addEventListener('click', () => {
   pushHistory();
   const count = state.elements.filter(e => e.type === 'text').length;
-  const el = { id: uid('text'), type: 'text', text: 'Nuovo testo', align: 'center', fontSize: 48, color: '#ffffff', xFrac: 0.5, yFrac: Math.min(0.75, 0.3 + count * 0.09), visible: true };
+  const el = { id: uid('text'), type: 'text', text: t('new_text_default'), align: 'center', fontSize: 48, color: '#ffffff', xFrac: 0.5, yFrac: Math.min(0.75, 0.3 + count * 0.09), visible: true };
   state.elements.push(el);
   state.selectedId = el.id;
   renderElementEditor();
@@ -666,7 +1060,7 @@ document.getElementById('addTextBtn').addEventListener('click', () => {
 document.getElementById('addProfileBtn').addEventListener('click', () => {
   pushHistory();
   const count = state.elements.filter(e => e.type === 'profile').length;
-  const el = { id: uid('profile'), type: 'profile', name: 'nuovo_profilo', avatarImage: null, avatarSize: 84, xFrac: 0.34, yFrac: Math.min(0.75, 0.18 + count * 0.09), visible: true };
+  const el = { id: uid('profile'), type: 'profile', name: t('new_profile_default'), avatarImage: null, avatarSize: 84, xFrac: 0.34, yFrac: Math.min(0.75, 0.18 + count * 0.09), visible: true };
   state.elements.push(el);
   state.selectedId = el.id;
   renderElementEditor();
@@ -698,8 +1092,8 @@ function toggleLayerVisibility(id) {
   if (state.allEditMode) renderAllElementsBar();
 }
 function layerLabel(el) {
-  if (el.type === 'text') { const t = el.text.replace(/\n/g, ' ').trim(); return t.length > 16 ? t.slice(0, 16) + '…' : (t || 'Testo vuoto'); }
-  return el.name || 'Profilo';
+  if (el.type === 'text') { const s = el.text.replace(/\n/g, ' ').trim(); return s.length > 16 ? s.slice(0, 16) + '…' : (s || t('empty_text_label')); }
+  return el.name || t('default_profile_label');
 }
 function renderLayersList() {
   const layersList = document.getElementById('layersList');
@@ -710,13 +1104,13 @@ function renderLayersList() {
     const row = document.createElement('div');
     row.className = 'layer-row' + (el.id === state.selectedId ? ' selected' : '');
     row.innerHTML = `
-      <button class="layer-btn" data-act="vis" title="Mostra/nascondi">${el.visible ? '👁' : '🙈'}</button>
+      <button class="layer-btn" data-act="vis" title="${t('title_vis')}">${el.visible ? '👁' : '🙈'}</button>
       <span class="layer-icon">${LAYER_META[el.type]}</span>
       <span class="layer-name">${layerLabel(el)}</span>
       <div class="layer-actions">
-        <button class="layer-btn" data-act="up" title="Porta avanti">▲</button>
-        <button class="layer-btn" data-act="down" title="Porta indietro">▼</button>
-        <button class="layer-btn" data-act="del" title="Elimina">🗑</button>
+        <button class="layer-btn" data-act="up" title="${t('title_up')}">▲</button>
+        <button class="layer-btn" data-act="down" title="${t('title_down')}">▼</button>
+        <button class="layer-btn" data-act="del" title="${t('title_del')}">🗑</button>
       </div>
     `;
     row.addEventListener('click', () => selectElement(el.id));
@@ -733,7 +1127,7 @@ function renderLayersList() {
   });
   const bgRow = document.createElement('div');
   bgRow.className = 'layer-row locked';
-  bgRow.innerHTML = '<span class="layer-icon">🔒</span><span class="layer-name">Sfondo</span>';
+  bgRow.innerHTML = `<span class="layer-icon">🔒</span><span class="layer-name">${t('bg_layer_label')}</span>`;
   layersList.appendChild(bgRow);
 }
 
@@ -817,8 +1211,8 @@ function buildAllElCard(el) {
   head.innerHTML = `
     <span class="editor-kind" style="margin:0;">${LAYER_META[el.type]} ${layerLabel(el).replace(/</g,'&lt;')}</span>
     <div class="all-el-card-actions">
-      <button class="layer-btn" data-act="vis" title="Mostra/nascondi">${el.visible ? '👁' : '🙈'}</button>
-      <button class="layer-btn" data-act="del" title="Elimina">🗑</button>
+      <button class="layer-btn" data-act="vis" title="${t('title_vis')}">${el.visible ? '👁' : '🙈'}</button>
+      <button class="layer-btn" data-act="del" title="${t('title_del')}">🗑</button>
     </div>
   `;
   card.appendChild(head);
@@ -835,13 +1229,13 @@ function buildAllElCard(el) {
       </div>
       <div class="field">
         <div class="seg" data-field="align">
-          <button data-align="left" class="${el.align === 'left' ? 'active' : ''}">Sx</button>
-          <button data-align="center" class="${el.align === 'center' ? 'active' : ''}">Cn</button>
-          <button data-align="right" class="${el.align === 'right' ? 'active' : ''}">Dx</button>
+          <button data-align="left" class="${el.align === 'left' ? 'active' : ''}">${t('align_left_short')}</button>
+          <button data-align="center" class="${el.align === 'center' ? 'active' : ''}">${t('align_center_short')}</button>
+          <button data-align="right" class="${el.align === 'right' ? 'active' : ''}">${t('align_right_short')}</button>
         </div>
       </div>
       <div class="field">
-        <div class="range-label"><span>Dimensione</span><span data-field="fontVal">${el.fontSize}</span></div>
+        <div class="range-label"><span>${t('label_fontsize')}</span><span data-field="fontVal">${el.fontSize}</span></div>
         <input type="range" data-field="font" min="24" max="100" value="${el.fontSize}">
       </div>
       <div class="field" style="margin-bottom:0;">
@@ -890,14 +1284,14 @@ function buildAllElCard(el) {
   } else {
     body.innerHTML = `
       <div class="field">
-        <label class="file-btn" data-field="avatarLabel">📷 Foto profilo</label>
+        <label class="file-btn" data-field="avatarLabel">${t('upload_avatar_short')}</label>
         <input type="file" data-field="avatar" accept="image/*" style="display:none;">
       </div>
       <div class="field">
-        <input type="text" data-field="name" value="${el.name.replace(/"/g, '&quot;')}" placeholder="@username">
+        <input type="text" data-field="name" value="${el.name.replace(/"/g, '&quot;')}" placeholder="${t('placeholder_username')}">
       </div>
       <div class="field" style="margin-bottom:0;">
-        <div class="range-label"><span>Dimensione</span><span data-field="sizeVal">${el.avatarSize}</span></div>
+        <div class="range-label"><span>${t('label_size')}</span><span data-field="sizeVal">${el.avatarSize}</span></div>
         <input type="range" data-field="size" min="40" max="220" value="${el.avatarSize}">
       </div>
     `;
@@ -931,7 +1325,7 @@ function buildAllElCard(el) {
 function renderAllElementsBar() {
   allElementsScroll.innerHTML = '';
   if (!state.elements.length) {
-    allElementsScroll.innerHTML = '<div class="editor-empty">Nessun elemento. Aggiungine uno dal pannello a sinistra.</div>';
+    allElementsScroll.innerHTML = `<div class="editor-empty">${t('all_elements_empty')}</div>`;
     return;
   }
   [...state.elements].reverse().forEach(el => allElementsScroll.appendChild(buildAllElCard(el)));
@@ -1072,6 +1466,7 @@ function render() {
   }
 
   renderSkeletonOverlay();
+  scheduleAutosave();
 }
 
 // ---------- Drag interaction ----------
@@ -1185,11 +1580,87 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   link.click();
 });
 
+// ---------- Struttura layout: esporta/importa (solo dati, niente immagini) ----------
+function buildStructureExport() {
+  return {
+    app: 'ig-post-creator-struttura',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    format: state.format,
+    bgMode: state.bgMode === 'image' ? 'color' : state.bgMode,
+    bgColor: state.bgColor,
+    elements: state.elements.map(el => {
+      const { _bbox, _handle, avatarImage, ...rest } = el;
+      return rest;
+    })
+  };
+}
+
+document.getElementById('exportStructBtn').addEventListener('click', () => {
+  const data = buildStructureExport();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = `post-layout-${state.format}.json`;
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+function importStructure(data) {
+  pushHistory();
+  state.format = FORMATS[data.format] ? data.format : state.format;
+  state.bgColor = typeof data.bgColor === 'string' ? data.bgColor : state.bgColor;
+  state.bgMode = 'color'; // la struttura esportata non include immagini di sfondo
+  state.bgImage = null;
+
+  const rawElements = Array.isArray(data.elements) ? data.elements : [];
+  const imported = rawElements.map(raw => elementFromPlainData(raw, { preserveId: false }));
+  if (imported.length) {
+    state.elements = imported;
+    state.selectedId = imported[0].id;
+  }
+
+  syncTopLevelUI();
+  renderElementEditor();
+  renderLayersList();
+  if (state.allEditMode) renderAllElementsBar();
+  render();
+}
+
+document.getElementById('importStructInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  e.target.value = ''; // permette di reimportare lo stesso file una seconda volta
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      importStructure(data);
+    } catch (err) {
+      alert(t('alert_invalid_json'));
+    }
+  };
+  reader.onerror = () => alert(t('alert_read_error'));
+  reader.readAsText(file);
+});
+
+document.getElementById('clearAutosaveBtn').addEventListener('click', () => {
+  const ok = confirm(t('confirm_clear'));
+  if (!ok) return;
+  try { localStorage.removeItem(AUTOSAVE_KEY); } catch (err) { /* storage non disponibile: nulla da fare */ }
+  location.reload();
+});
+
 // ---------- Init ----------
-syncTopLevelUI();
-renderElementEditor();
-renderLayersList();
-render();
+(async function initApp() {
+  applyLanguage(detectLang());
+  await loadAutosaveIfPresent();
+  syncTopLevelUI();
+  renderElementEditor();
+  renderLayersList();
+  render();
+})();
 </script>
 </body>
 </html>
