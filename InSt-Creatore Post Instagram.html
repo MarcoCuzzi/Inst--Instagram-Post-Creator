@@ -26,7 +26,7 @@
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  .app { display: flex; min-height: 100%; flex-wrap: wrap; }
+  .app { display: flex; height: 100vh; flex-wrap: nowrap; align-items: stretch; }
   .panel {
     flex: 1 1 380px;
     padding: 24px;
@@ -204,7 +204,9 @@
 
   @media (max-width: 760px) {
     .panel { max-width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
-    .app { flex-direction: column; }
+    .app { flex-direction: column; height: auto; min-height: 100%; }
+    .panel { height: auto; max-height: none; }
+    .stage { height: auto; }
     canvas { max-height: 60vh; }
     .layers-panel {
       position: fixed; top: auto; bottom: 16px; left: 50%; right: auto;
@@ -281,7 +283,7 @@
       <div class="layers-panel" id="layersPanel">
         <div class="layers-title">Livelli</div>
         <div id="layersList"></div>
-        <div class="layers-hint">Trascina l'ordine per decidere cosa sta sopra o sotto. Clicca un livello per modificarlo.</div>
+        <div class="layers-hint">Trascina l'ordine per decidere cosa sta sopra o sotto. Clicca un livello per modificarlo. Con lo strumento Sposta, trascina il cerchietto sull'angolo di un elemento selezionato per ridimensionarlo.</div>
       </div>
 
       <div class="canvas-wrap">
@@ -312,7 +314,7 @@ const state = {
   dragMode: false,
   elements: [
     { id: uid('text'), type: 'text', text: 'La cosa più difficile non è iniziare.\nÈ continuare quando nessuno guarda.', align: 'center', fontSize: 54, color: '#ffffff', xFrac: 0.5, yFrac: 0.52, visible: true },
-    { id: uid('profile'), type: 'profile', name: 'il_tuo_profilo', avatarImage: null, xFrac: 0.34, yFrac: 0.40, visible: true }
+    { id: uid('profile'), type: 'profile', name: 'il_tuo_profilo', avatarImage: null, avatarSize: 84, xFrac: 0.34, yFrac: 0.40, visible: true }
   ],
   selectedId: null
 };
@@ -517,9 +519,13 @@ function renderElementEditor() {
           <label class="file-btn" for="edAvatar">📷 Carica foto profilo</label>
           <input type="file" id="edAvatar" accept="image/*">
         </div>
-        <div class="field" style="margin-bottom:6px;">
+        <div class="field" style="margin-bottom:14px;">
           <label>Nome / username</label>
           <input type="text" id="edName" value="${el.name.replace(/"/g, '&quot;')}" placeholder="@username">
+        </div>
+        <div class="field" style="margin-bottom:6px;">
+          <div class="range-label"><span>Dimensione</span><span id="edSizeVal">${el.avatarSize}</span></div>
+          <input type="range" id="edSize" min="40" max="220" value="${el.avatarSize}">
         </div>
         <button class="delete-btn" id="edDelete">🗑 Elimina questo profilo</button>
       </div>
@@ -528,6 +534,13 @@ function renderElementEditor() {
     const nameInput = document.getElementById('edName');
     nameInput.addEventListener('focus', () => pushHistory());
     nameInput.addEventListener('input', () => { el.name = nameInput.value; renderLayersList(); render(); });
+    const sizeSlider = document.getElementById('edSize');
+    sizeSlider.addEventListener('focus', () => pushHistory());
+    sizeSlider.addEventListener('input', () => {
+      el.avatarSize = parseInt(sizeSlider.value, 10);
+      document.getElementById('edSizeVal').textContent = el.avatarSize;
+      render();
+    });
     document.getElementById('edDelete').addEventListener('click', () => deleteElement(el.id));
   }
 }
@@ -565,7 +578,7 @@ document.getElementById('addTextBtn').addEventListener('click', () => {
 document.getElementById('addProfileBtn').addEventListener('click', () => {
   pushHistory();
   const count = state.elements.filter(e => e.type === 'profile').length;
-  const el = { id: uid('profile'), type: 'profile', name: 'nuovo_profilo', avatarImage: null, xFrac: 0.34, yFrac: Math.min(0.75, 0.18 + count * 0.09), visible: true };
+  const el = { id: uid('profile'), type: 'profile', name: 'nuovo_profilo', avatarImage: null, avatarSize: 84, xFrac: 0.34, yFrac: Math.min(0.75, 0.18 + count * 0.09), visible: true };
   state.elements.push(el);
   state.selectedId = el.id;
   renderElementEditor();
@@ -702,8 +715,8 @@ function render() {
         ctx.fillText(line, anchorX, topY + lineHeight * (i + 1) - lineHeight * 0.22);
       });
     } else {
-      const avatarSize = 84 * scale;
-      const nameFontSize = 30 * scale;
+      const avatarSize = el.avatarSize * scale;
+      const nameFontSize = avatarSize * (30 / 84);
       ctx.font = `600 ${nameFontSize}px ${FONT_STACK}`;
       const nameWidth = ctx.measureText(el.name).width;
       const rowWidth = avatarSize + 18 * scale + nameWidth;
@@ -747,19 +760,42 @@ function render() {
     ctx.setLineDash([10 * scale, 8 * scale]);
     ctx.lineWidth = 2 * scale;
     state.elements.forEach(el => {
-      if (!el.visible || !el._bbox) return;
+      if (!el.visible || !el._bbox) { el._handle = null; return; }
       const b = el._bbox;
-      ctx.strokeStyle = el.id === state.selectedId ? 'rgba(124,92,255,0.9)' : 'rgba(255,255,255,0.5)';
+      const isSel = el.id === state.selectedId;
+      ctx.strokeStyle = isSel ? 'rgba(124,92,255,0.9)' : 'rgba(255,255,255,0.5)';
       ctx.strokeRect(b.x - 10 * scale, b.y - 10 * scale, b.w + 20 * scale, b.h + 20 * scale);
+      if (isSel) {
+        const hx = b.x + b.w + 10 * scale;
+        const hy = b.y + b.h + 10 * scale;
+        const hr = 11 * scale;
+        el._handle = { x: hx, y: hy, r: hr };
+        ctx.save();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#7c5cff';
+        ctx.lineWidth = 2.5 * scale;
+        ctx.beginPath();
+        ctx.arc(hx, hy, hr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        el._handle = null;
+      }
     });
     ctx.restore();
   }
 }
 
 // ---------- Drag interaction ----------
+let dragAction = null; // 'move' | 'resize'
 let dragTarget = null;
 let dragStart = null;
 let dragStartFrac = null;
+let dragStartSize = null;
+let dragAnchor = null;
+let dragStartDist = null;
 
 function pointFromEvent(e) {
   const rect = canvas.getBoundingClientRect();
@@ -770,14 +806,31 @@ function pointFromEvent(e) {
   return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
 }
 function inBox(pt, box) { return box && pt.x >= box.x && pt.x <= box.x + box.w && pt.y >= box.y && pt.y <= box.y + box.h; }
+function nearHandle(pt, handle) { return handle && Math.hypot(pt.x - handle.x, pt.y - handle.y) <= handle.r * 1.8; }
 
 function startDrag(e) {
   if (!state.dragMode) return;
   const pt = pointFromEvent(e);
+  const sel = getSelected();
+
+  if (sel && sel.visible && sel._handle && nearHandle(pt, sel._handle)) {
+    pushHistory();
+    dragAction = 'resize';
+    dragTarget = sel;
+    dragStartSize = sel.type === 'text' ? sel.fontSize : sel.avatarSize;
+    dragAnchor = { x: sel._bbox.x, y: sel._bbox.y };
+    dragStartDist = Math.max(1, Math.hypot(pt.x - dragAnchor.x, pt.y - dragAnchor.y));
+    dragStart = pt;
+    canvas.style.cursor = 'nwse-resize';
+    e.preventDefault();
+    return;
+  }
+
   const frontToBack = [...state.elements].reverse();
   for (const el of frontToBack) {
     if (el.visible && inBox(pt, el._bbox)) {
       pushHistory();
+      dragAction = 'move';
       dragTarget = el;
       dragStartFrac = { x: el.xFrac, y: el.yFrac };
       selectElement(el.id);
@@ -792,6 +845,22 @@ function startDrag(e) {
 function moveDrag(e) {
   if (!dragTarget) return;
   const pt = pointFromEvent(e);
+  if (dragAction === 'resize') {
+    const dist = Math.hypot(pt.x - dragAnchor.x, pt.y - dragAnchor.y);
+    const ratio = dist / dragStartDist;
+    let newSize = dragStartSize * ratio;
+    if (dragTarget.type === 'text') {
+      newSize = Math.max(24, Math.min(100, Math.round(newSize)));
+      dragTarget.fontSize = newSize;
+    } else {
+      newSize = Math.max(40, Math.min(220, Math.round(newSize)));
+      dragTarget.avatarSize = newSize;
+    }
+    render();
+    refreshEditorSizeDisplay();
+    e.preventDefault();
+    return;
+  }
   const dxFrac = (pt.x - dragStart.x) / canvas.width;
   const dyFrac = (pt.y - dragStart.y) / canvas.height;
   dragTarget.xFrac = dragStartFrac.x + dxFrac;
@@ -799,9 +868,22 @@ function moveDrag(e) {
   render();
   e.preventDefault();
 }
+function refreshEditorSizeDisplay() {
+  if (!dragTarget || dragTarget.id !== state.selectedId) return;
+  if (dragTarget.type === 'text') {
+    const slider = document.getElementById('edFont');
+    const val = document.getElementById('edFontVal');
+    if (slider) { slider.value = dragTarget.fontSize; val.textContent = dragTarget.fontSize; }
+  } else {
+    const slider = document.getElementById('edSize');
+    const val = document.getElementById('edSizeVal');
+    if (slider) { slider.value = dragTarget.avatarSize; val.textContent = dragTarget.avatarSize; }
+  }
+}
 function endDrag() {
-  if (dragTarget && state.dragMode) canvas.style.cursor = 'grab';
+  if (dragTarget && state.dragMode) canvas.style.cursor = dragAction === 'resize' ? 'nwse-resize' : 'grab';
   dragTarget = null;
+  dragAction = null;
 }
 canvas.addEventListener('mousedown', startDrag);
 window.addEventListener('mousemove', moveDrag);
