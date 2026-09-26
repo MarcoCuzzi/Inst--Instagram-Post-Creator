@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Post Creator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <div class="title-row">
+      <div>
+        <h1 data-i18n="title">Crea il tuo post</h1>
+        <p class="subtitle" data-i18n="subtitle">Testo, sfondo e profilo — pronto per Instagram</p>
+      </div>
+      <select class="lang-select" id="langSelect" aria-label="Lingua / Language">
+        <option value="it">🇮🇹 Italiano</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label data-i18n="label_format">Formato</label>
+      <div class="seg" id="formatSeg">
+        <button data-fmt="square" class="active" data-i18n="fmt_square">Quadrato</button>
+        <button data-fmt="portrait" data-i18n="fmt_portrait">Verticale 4:5</button>
+        <button data-fmt="story" data-i18n="fmt_story">Storia 9:16</button>
+      </div>
+    </div>
+
+    <div class="section-title" data-i18n="section_background">Sfondo</div>
+    <div class="field">
+      <div class="seg" id="bgModeSeg">
+        <button data-mode="color" class="active" data-i18n="bgmode_color">Colore</button>
+        <button data-mode="image" data-i18n="bgmode_image">Immagine</button>
+      </div>
+    </div>
+    <div class="field" id="bgColorField">
+      <div class="swatches" id="colorSwatches"></div>
+      <input type="color" id="customColor" value="#7c5cff">
+    </div>
+    <div class="field" id="bgImageField" style="display:none;">
+      <label class="file-btn" for="bgImageInput" data-i18n="bgimage_label">📷 Carica immagine di sfondo</label>
+      <input type="file" id="bgImageInput" accept="image/*">
+    </div>
+
+    <div class="section-title" data-i18n="section_elements">Elementi</div>
+    <div class="add-row">
+      <button class="action-btn" id="addTextBtn" data-i18n="add_text">➕ Testo</button>
+      <button class="action-btn" id="addProfileBtn" data-i18n="add_profile">➕ Profilo</button>
+    </div>
+    <div class="add-row">
+      <div class="objects-menu-wrap">
+        <button class="action-btn" id="addObjectBtn" data-i18n="add_object">➕ Oggetti</button>
+        <div class="objects-menu" id="objectsMenu">
+          <button type="button" data-shape="line" data-i18n="shape_line">📏 Linea</button>
+          <button type="button" data-shape="rect" data-i18n="shape_rect">▭ Rettangolo</button>
+          <button type="button" data-shape="circle" data-i18n="shape_circle">⚪ Cerchio</button>
+          <button type="button" data-shape="rhombus" data-i18n="shape_rhombus">◆ Rombo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title" data-i18n="section_edit_element">Modifica elemento</div>
+    <div id="elementEditor"></div>
+
+    <div class="section-title" data-i18n="section_structure">Struttura layout</div>
+    <div class="struct-row">
+      <button class="struct-btn export" id="exportStructBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="export_struct">Esporta struttura</span>
+      </button>
+      <label class="struct-btn import" for="importStructInput">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 15V3m0 0-4 4m4-4 4 4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="import_struct">Importa struttura</span>
+      </label>
+      <input type="file" id="importStructInput" accept="application/json,.json">
+    </div>
+    <div class="hint" data-i18n="hint_struct">Esporta solo il layout — testi, posizioni, colori, formato — in un piccolo file .json, senza le immagini caricate, per riusare velocemente la stessa impostazione su un nuovo post.</div>
+
+    <div class="download-bar">
+      <button class="btn-primary" id="downloadBtn" data-i18n="download_btn">Scarica immagine PNG</button>
+    </div>
+    <div class="hint" data-i18n="hint_sizes">Quadrato 1080×1080 · Verticale 1080×1350 · Storia 1080×1920 — tutte le dimensioni consigliate da Instagram.</div>
+    <div class="hint" data-i18n="hint_autosave">💾 Il progetto viene salvato automaticamente in questo browser: se chiudi o ricarichi la pagina, lo ritrovi com'era.</div>
+    <button type="button" class="link-btn" id="clearAutosaveBtn" data-i18n="clear_autosave">Cancella dati salvati e ricomincia</button>
+  </div>
+
+  <div class="stage">
+    <div class="stage-inner">
+      <div class="toolbar">
+        <button class="tool-btn active" id="toolSelect" data-tooltip="Seleziona / naviga" data-i18n-tooltip="tooltip_select">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 3l14 8-6 1.5L11 19z" fill="currentColor"/></svg>
+        </button>
+        <button class="tool-btn" id="toolMove" data-tooltip="Sposta gli elementi" data-i18n-tooltip="tooltip_move">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2l3 3h-2v5h5V8l3 3-3 3v-2h-5v5h2l-3 3-3-3h2v-5H6v2l-3-3 3-3v2h5V5H9z" fill="currentColor"/></svg>
+        </button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="toolLayers" data-tooltip="Livelli" data-i18n-tooltip="tooltip_layers">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2 2 7l10 5 10-5zM2 12l10 5 10-5M2 17l10 5 10-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="toolUndo" data-tooltip="Annulla ultima modifica" data-i18n-tooltip="tooltip_undo" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="toolSkeleton" data-tooltip="Vista scheletro: mostra tutti i quadranti" data-i18n-tooltip="tooltip_skeleton">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <g transform="rotate(45 12 12)">
+              <rect x="9" y="5" width="6" height="14" rx="3" fill="currentColor"/>
+              <circle cx="9" cy="6" r="2.6" fill="currentColor"/>
+              <circle cx="15" cy="6" r="2.6" fill="currentColor"/>
+              <circle cx="9" cy="18" r="2.6" fill="currentColor"/>
+              <circle cx="15" cy="18" r="2.6" fill="currentColor"/>
+            </g>
+          </svg>
+        </button>
+        <button class="tool-btn" id="toolEditAll" data-tooltip="Modifica tutti gli elementi insieme" data-i18n-tooltip="tooltip_editall">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <rect x="3" y="4" width="5" height="16" rx="1.5" fill="currentColor"/>
+            <rect x="9.5" y="4" width="5" height="16" rx="1.5" fill="currentColor" opacity="0.55"/>
+            <rect x="16" y="4" width="5" height="16" rx="1.5" fill="currentColor" opacity="0.55"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="all-elements-bar" id="allElementsBar">
+        <div class="all-elements-scroll" id="allElementsScroll"></div>
+      </div>
+
+      <div class="layers-panel" id="layersPanel">
+        <div class="layers-title" data-i18n="layers_title">Livelli</div>
+        <div id="layersList"></div>
+        <div class="layers-hint" data-i18n="layers_hint">Trascina l'ordine per decidere cosa sta sopra o sotto. Clicca un livello per modificarlo. Con lo strumento Sposta, trascina il cerchietto sull'angolo di un elemento selezionato per ridimensionarlo.</div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1080"></canvas>
+        <div class="skeleton-overlay" id="skeletonOverlay"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  Ordine di caricamento IMPORTANTE: ogni file definisce funzioni/costanti
+  globali usate da quelli successivi. main.js (l'ultimo) collega tutti gli
+  eventi e avvia l'app, così quando gira è garantito che tutto il resto sia
+  già stato definito.
+-->
+<script src="js/i18n/it.js"></script>
+<script src="js/i18n/en.js"></script>
+<script src="js/i18n/es.js"></script>
+<script src="js/i18n/fr.js"></script>
+<script src="js/i18n/de.js"></script>
+<script src="js/i18n/index.js"></script>
+
+<script src="js/utils.js"></script>
+<script src="js/canvas-utils.js"></script>
+<script src="js/element-types.js"></script>
+
+<script src="js/state.js"></script>
+<script src="js/persistence.js"></script>
+
+<script src="js/ui-panel.js"></script>
+<script src="js/ui-editor.js"></script>
+<script src="js/ui-layers.js"></script>
+<script src="js/ui-toolbar.js"></script>
+<script src="js/ui-edit-all.js"></script>
+
+<script src="js/canvas-render.js"></script>
+<script src="js/interaction.js"></script>
+<script src="js/io.js"></script>
+
+<script src="js/main.js"></script>
+</body>
+</html>
